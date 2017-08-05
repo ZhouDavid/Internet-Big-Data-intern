@@ -18,7 +18,7 @@ def inValid(x):
 
 def isPro(x):
     if isinstance(x,str):
-        if x.startswith('本人'):
+        if x.startswith('本人') or '订单号' in x or '诱导我与其交易' in x:
             return True
     return False
 
@@ -29,20 +29,22 @@ def hasLaw(x):
 
 if __name__ == '__main__':
     startTime = time.time()
-    rawDataFileName = os.path.join('..','..','..','data','professional informant','20170501.csv')
+    rawDataFileName = os.path.join('..','..','..','data','professional informant','commonTest.csv')
     colFileName = os.path.join('..','..','..','data','professional informant','20170501-职业举报人.csv')
     colData = pd.read_csv(colFileName)
     outColNames = colData.columns
 
     rawData = pd.read_csv(rawDataFileName)
+    print('initial shape:{}'.format(rawData.shape))
+
     inColNames = rawData.columns
 
     filtData = rawData[(rawData['RECORD_IS_INVALID']==0)&\
-                       (rawData['RECORD_TYPE']!=3)&\
-                       (rawData['HANDLE_STATE']!=3)&\
-                       (rawData['REPLY_CONTENTS'].map(inValid))&\
-                        rawData['HANDLE_RESULT'].map(inValid)&\
-                        rawData['RECORD_HANDLE_DEVISECONTENTS'].map(inValid)]
+                       (rawData['RECORD_TYPE']!=3)]
+                      # (rawData['HANDLE_STATE']!=3)
+                      # (rawData['REPLY_CONTENTS'].map(inValid))&\
+                      #  rawData['HANDLE_RESULT'].map(inValid)&\
+                      #  rawData['RECORD_HANDLE_DEVISECONTENTS'].map(inValid)]
 
     #构建输出数据
     #求colName并集
@@ -50,6 +52,7 @@ if __name__ == '__main__':
     newColNames = [col for col in newColNames if col in outColNames]
     for col in newColNames:
         filtData[col]=np.nan
+
     filtData = filtData.reset_index(level = list(range(filtData.shape[0])))
 
     for i in range(filtData.shape[0]):
@@ -65,19 +68,20 @@ if __name__ == '__main__':
 
     filtData = filtData[outColNames]
 
+    print('filt shape:{}'.format(filtData.shape))
     # 将初步标注好的数据分成四部分：（1，1） （0，1）（0，0） （1，0）
     d1 = filtData[(filtData['PROFESSIONAL_PERSON'] == 1) & (filtData['RECORD_INCLUDE_LAW'] == 1)]
     d2 = filtData[(filtData['PROFESSIONAL_PERSON'] == 1) & (filtData['RECORD_INCLUDE_LAW'] == 0)]
     d3 = filtData[(filtData['PROFESSIONAL_PERSON'] == 0) & (filtData['RECORD_INCLUDE_LAW'] == 1)]
     d4 = filtData[(filtData['PROFESSIONAL_PERSON'] == 0) & (filtData['RECORD_INCLUDE_LAW'] == 0)]
 
+    outDirectory = os.path.join('..','..','..','data','professional informant')
+    # d1.to_csv(os.path.join(outDirectory,'out11.csv'), index=False)
+    # d2.to_csv(os.path.join(outDirectory,'out10.csv'), index=False)
+    # d3.to_csv(os.path.join(outDirectory,'out01.csv'), index=False)
+    # d4.to_csv(os.path.join(outDirectory,'out00.csv'), index=False)
+    filtData.to_csv(os.path.join(outDirectory,'outTest.csv'),index=False)
 
-    # d1.to_csv('out1.csv', index=False)
-    # d2.to_csv('out2.csv', index=False)
-    # d3.to_csv('out3.csv', index=False)
-    # d4.to_csv('out4.csv', index=False)
-    filtData.to_csv('out0.csv',index=False)
-
-    print(d1.shape,d2.shape,d3.shape,d4.shape)
+    print('split shape:{},{},{},{}'.format(d1.shape,d2.shape,d3.shape,d4.shape))
     endTime = time.time()
     print('finished,cost {} seconds'.format(endTime-startTime))
