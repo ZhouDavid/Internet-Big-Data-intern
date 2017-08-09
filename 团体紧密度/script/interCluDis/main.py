@@ -61,9 +61,8 @@ def index_for_edges(edges):
     sourceDict = defaultdict(dict)
     targetDict = defaultdict(dict)
     for (source,target,w) in edges:
-        if w:
-            sourceDict[source][target] = (source,target,w)
-            targetDict[target][source] = (source,target,w)
+        sourceDict[source][target] = (source,target,w)
+        #targetDict[target][source] = (source,target,w)
     return sourceDict,targetDict
 
 def type2node_name(nodes):
@@ -73,10 +72,18 @@ def type2node_name(nodes):
     return d
 
 
+def del_self_edge(edges):
+    newEdges = []
+    for e in edges:
+        if not e[0] == e[1]:
+            if e[2]:
+                newEdges.append(e)
+    return newEdges
 
 def clusterDistance(G,type1,type2):
     nodes = G.nodes(data=True)
     edges = G.edges(data='weight')
+    edges = del_self_edge(edges)
     #对nodes 和edges进行预处理，建索引
     nodeInfo = index_for_nodes(nodes)
     nodeDict = defaultdict(dict)
@@ -112,6 +119,36 @@ def clusterDistance(G,type1,type2):
     for e in commonEdges:
         dist+= (nodeDict[e[0]]['c1']*nodeDict[e[1]]['c2']*e[2])
     return dist
+
+def has_double_edge(edges):
+    nodeNames=[]
+    newEdges = []
+    for e in edges:
+        nodeNames.append(e[0])
+        nodeNames.append(e[1])
+    nodeNames = list(set(nodeNames))
+
+    i = 0
+    nodeNameDict={}
+    for n in nodeNames:
+        nodeNameDict[n] = i
+        i+=1
+
+    for e in edges:
+        if nodeNameDict[e[0]]<nodeNameDict[e[1]]:
+            newEdges.append(e)
+        elif nodeNameDict[e[0]]>nodeNameDict[e[1]]:
+            newEdges.append((e[1],e[0],e[2]))
+        else:
+            tmp = e
+            print('here')
+    l1 = len(list(set(newEdges)))
+    l2 = len(newEdges)
+    if not len(list(set(newEdges)))==len(newEdges):
+        l1 = len(list(set(newEdges)))
+        l2=len(newEdges)
+        print('fuck you ')
+
 k = 0
 for path in dataPaths:
     data = pd.DataFrame()
@@ -126,6 +163,9 @@ for path in dataPaths:
     types1 = []
     types2 = []
     dists = []
+    #重边检测
+    #has_double_edge(graph.edges(data='weight'))
+
     print(clusterDistance(graph,0,8))
     # for i in range(len(types)):
     #     for j in range(i+1,len(types)):
