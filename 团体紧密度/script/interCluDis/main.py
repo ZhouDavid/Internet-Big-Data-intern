@@ -3,9 +3,11 @@ import networkx as nx
 import os
 from collections import defaultdict
 from collections import Counter
+import pandas as pd
+
 
 dataDirectory = os.path.join('..','..','..','data','cluster')
-dataNames = ['大数据.gexf']
+dataNames = ['大数据.gexf']#,'大连税务.gexf','2016贵州招投标结果.gexf'
 dataPaths = [os.path.join(dataDirectory,name) for name in dataNames]
 
 def find_common_edges(type1,type2,edgeSourceDict,type2nodeDict):
@@ -110,19 +112,29 @@ def clusterDistance(G,type1,type2):
     for e in commonEdges:
         dist+= (nodeDict[e[0]]['c1']*nodeDict[e[1]]['c2']*e[2])
     return dist
-
+k = 0
 for path in dataPaths:
+    data = pd.DataFrame()
     graph = nx.read_gexf(path)
     #获取一共有多少个类
     nodes = graph.nodes(data=True)
     types = []
     for node in nodes:
         types.append(node[1]['Modularity Class'])
-    # count = Counter(types)
-    # print(count)
+
     types = list(set(types))
-    for i in range(len(types)):
-        for j in range(len(types)):
-            dist = clusterDistance(graph,types[i],types[j])
-            print('type {} and type {}: {}'.format(types[i],types[j],dist))
+    types1 = []
+    types2 = []
+    dists = []
+    print(clusterDistance(graph,0,8))
+    # for i in range(len(types)):
+    #     for j in range(i+1,len(types)):
+    #         dist = clusterDistance(graph,types[i],types[j])
+    #         print('type {} type {} : {}'.format(types[i],types[j],dist))
+    #         # types1.append(types[i])
+    #         # types2.append(types[j])
+            # dists.append(dist)
+    # data = pd.DataFrame({'type1':types1,'type2':types2,'value':dists})
+    # data.to_csv(dataNames[k]+'.csv',index=False)
+    k+=1
 
