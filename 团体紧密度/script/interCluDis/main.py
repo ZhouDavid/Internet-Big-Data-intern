@@ -7,7 +7,7 @@ import pandas as pd
 
 
 dataDirectory = os.path.join('..','..','..','data','cluster')
-dataNames = ['大数据.gexf']#,'大连税务.gexf','2016贵州招投标结果.gexf'
+dataNames = ['大连税务.gexf']#,'大连税务.gexf','2016贵州招投标结果.gexf'
 dataPaths = [os.path.join(dataDirectory,name) for name in dataNames]
 
 def find_common_edges(type1,type2,edgeSourceDict,type2nodeDict):
@@ -37,15 +37,18 @@ def cal_contrib(nodeName,typeName,edgeSet,nodeInfo):
     weight = 0
     totWeight = 0
     for e in edgeSet:
-        totWeight+=e[1][2]
+        if e[1][2]:
+            totWeight+=e[1][2]
         sn = e[1][0]
         tn = e[1][1]
         if sn == nodeName:
             if nodeInfo[tn] == typeName:
-                weight+=e[1][2]
+                if e[1][2]:
+                    weight+=e[1][2]
         else:
             if nodeInfo[sn] == typeName:
-                weight+=e[1][2]
+                if e[1][2]:
+                    weight+=e[1][2]
 
     if totWeight == 0:
         return 0
@@ -68,7 +71,7 @@ def index_for_edges(edges):
         if source == '3G型云计算桌面终端':
             print('here')
         sourceDict[source][target] = (source,target,w)
-        #targetDict[target][source] = (source,target,w)
+        targetDict[target][source] = (source,target,w)
     keys = sorted(sourceDict)
     keys = [key+'\n' for key in keys]
     open('tmp2.txt','w').writelines(keys)
@@ -92,7 +95,7 @@ def del_self_edge(edges):
 
 def clusterDistance(G,type1,type2):
     nodes = G.nodes(data=True)
-    edges = nx.edges(G)
+    edges = G.edges(data='weight')
     edges.sort()
     # edges = del_self_edge(edges)
     #对nodes 和edges进行预处理，建索引
@@ -128,7 +131,8 @@ def clusterDistance(G,type1,type2):
 
     dist = 0
     for e in commonEdges:
-        dist+= (nodeDict[e[0]]['c1']*nodeDict[e[1]]['c2']*e[2])
+        if (nodeDict[e[0]]['c1']*nodeDict[e[1]]['c2']*e[2]):
+            dist+=(nodeDict[e[0]]['c1']*nodeDict[e[1]]['c2']*e[2])
     return dist
 
 def has_double_edge(edges):
@@ -163,10 +167,10 @@ for path in dataPaths:
     graph = nx.read_gexf(path)
     #获取一共有多少个类
     nodes = graph.nodes(data=True)
-    edges = graph.edges(data=True)
+    edges = graph.edges(data='weight')
     edges.sort()
-    edges2 = graph.edges(data=True)
-    edges2.sort()
+    # edges2 = graph.edges(data=True)
+    # edges2.sort()
     types = []
     for node in nodes:
         types.append(node[1]['Modularity Class'])
@@ -176,9 +180,9 @@ for path in dataPaths:
     types2 = []
     dists = []
     #重边检测
-    #has_double_edge(graph.edges(data='weight'))
+   # has_double_edge(graph.edges(data='weight'))
 
-    print(clusterDistance(graph,0,8))
+    print(clusterDistance(graph,32,491))
     # for i in range(len(types)):
     #     for j in range(i+1,len(types)):
     #         dist = clusterDistance(graph,types[i],types[j])
