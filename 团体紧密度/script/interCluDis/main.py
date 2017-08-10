@@ -60,9 +60,19 @@ def index_for_nodes(nodes):
 def index_for_edges(edges):
     sourceDict = defaultdict(dict)
     targetDict = defaultdict(dict)
+    tgEdges = []
+    for edge in edges:
+        if edge[0] == '3G型云计算桌面终端':
+            tgEdges.append(edge)
     for (source,target,w) in edges:
+        if source == '3G型云计算桌面终端':
+            print('here')
         sourceDict[source][target] = (source,target,w)
         #targetDict[target][source] = (source,target,w)
+    keys = sorted(sourceDict)
+    keys = [key+'\n' for key in keys]
+    open('tmp2.txt','w').writelines(keys)
+
     return sourceDict,targetDict
 
 def type2node_name(nodes):
@@ -82,8 +92,9 @@ def del_self_edge(edges):
 
 def clusterDistance(G,type1,type2):
     nodes = G.nodes(data=True)
-    edges = G.edges(data='weight')
-    edges = del_self_edge(edges)
+    edges = nx.edges(G)
+    edges.sort()
+    # edges = del_self_edge(edges)
     #对nodes 和edges进行预处理，建索引
     nodeInfo = index_for_nodes(nodes)
     nodeDict = defaultdict(dict)
@@ -136,18 +147,15 @@ def has_double_edge(edges):
 
     for e in edges:
         if nodeNameDict[e[0]]<nodeNameDict[e[1]]:
-            newEdges.append(e)
+            newEdges.append((e[0],e[1]))
         elif nodeNameDict[e[0]]>nodeNameDict[e[1]]:
-            newEdges.append((e[1],e[0],e[2]))
-        else:
-            tmp = e
-            print('here')
+            newEdges.append((e[1],e[0]))
+
     l1 = len(list(set(newEdges)))
     l2 = len(newEdges)
     if not len(list(set(newEdges)))==len(newEdges):
-        l1 = len(list(set(newEdges)))
-        l2=len(newEdges)
-        print('fuck you ')
+        return True
+    return False
 
 k = 0
 for path in dataPaths:
@@ -155,6 +163,10 @@ for path in dataPaths:
     graph = nx.read_gexf(path)
     #获取一共有多少个类
     nodes = graph.nodes(data=True)
+    edges = graph.edges(data=True)
+    edges.sort()
+    edges2 = graph.edges(data=True)
+    edges2.sort()
     types = []
     for node in nodes:
         types.append(node[1]['Modularity Class'])
