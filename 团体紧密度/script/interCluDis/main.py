@@ -7,7 +7,7 @@ import pandas as pd
 
 
 dataDirectory = os.path.join('..','..','..','data','cluster')
-dataNames = ['大连税务.gexf']#,'大连税务.gexf','2016贵州招投标结果.gexf'
+dataNames = ['大数据.gexf']#,'大连税务.gexf','2016贵州招投标结果.gexf'
 dataPaths = [os.path.join(dataDirectory,name) for name in dataNames]
 
 def find_common_edges(type1,type2,edgeSourceDict,type2nodeDict):
@@ -63,18 +63,16 @@ def index_for_nodes(nodes):
 def index_for_edges(edges):
     sourceDict = defaultdict(dict)
     targetDict = defaultdict(dict)
-    tgEdges = []
-    for edge in edges:
-        if edge[0] == '3G型云计算桌面终端':
-            tgEdges.append(edge)
+    #tgEdges = []
+    # for edge in edges:
+    #     if edge[0] == '3G型云计算桌面终端':
+    #         tgEdges.append(edge)
     for (source,target,w) in edges:
-        if source == '3G型云计算桌面终端':
-            print('here')
         sourceDict[source][target] = (source,target,w)
         targetDict[target][source] = (source,target,w)
-    keys = sorted(sourceDict)
-    keys = [key+'\n' for key in keys]
-    open('tmp2.txt','w').writelines(keys)
+    # keys = sorted(sourceDict)
+    # keys = [key+'\n' for key in keys]
+    # open('tmp1.txt','w').writelines(keys)
 
     return sourceDict,targetDict
 
@@ -96,8 +94,8 @@ def del_self_edge(edges):
 def clusterDistance(G,type1,type2):
     nodes = G.nodes(data=True)
     edges = G.edges(data='weight')
+    edges = del_self_edge(edges)
     edges.sort()
-    # edges = del_self_edge(edges)
     #对nodes 和edges进行预处理，建索引
     nodeInfo = index_for_nodes(nodes)
     nodeDict = defaultdict(dict)
@@ -167,30 +165,28 @@ for path in dataPaths:
     graph = nx.read_gexf(path)
     #获取一共有多少个类
     nodes = graph.nodes(data=True)
-    edges = graph.edges(data='weight')
-    edges.sort()
-    # edges2 = graph.edges(data=True)
-    # edges2.sort()
+
     types = []
     for node in nodes:
         types.append(node[1]['Modularity Class'])
 
     types = list(set(types))
+    types.sort()
     types1 = []
     types2 = []
     dists = []
     #重边检测
-   # has_double_edge(graph.edges(data='weight'))
+    #has_double_edge(graph.edges(data='weight'))
 
-    print(clusterDistance(graph,32,491))
-    # for i in range(len(types)):
-    #     for j in range(i+1,len(types)):
-    #         dist = clusterDistance(graph,types[i],types[j])
-    #         print('type {} type {} : {}'.format(types[i],types[j],dist))
-    #         # types1.append(types[i])
-    #         # types2.append(types[j])
-            # dists.append(dist)
-    # data = pd.DataFrame({'type1':types1,'type2':types2,'value':dists})
-    # data.to_csv(dataNames[k]+'.csv',index=False)
+
+    for i in range(len(types)):
+        for j in range(i+1,len(types)):
+            dist = clusterDistance(graph,types[i],types[j])
+            print('type {} type {} : {}'.format(types[i],types[j],dist))
+            types1.append(types[i])
+            types2.append(types[j])
+            dists.append(dist)
+    data = pd.DataFrame({'type1':types1,'type2':types2,'value':dists})
+    data.to_csv(dataNames[k]+'.csv',index=False)
     k+=1
 
