@@ -4,11 +4,12 @@ import os
 from collections import defaultdict
 from collections import Counter
 import pandas as pd
-
+import time
 
 dataDirectory = os.path.join('..','..','..','data','cluster')
 dataNames = ['大数据.gexf']#,'大连税务.gexf','2016贵州招投标结果.gexf'
 dataPaths = [os.path.join(dataDirectory,name) for name in dataNames]
+N = 20#平衡系数
 
 def find_common_edges(type1,type2,edgeSourceDict,type2nodeDict):
     t1 = type2nodeDict[type1]
@@ -130,7 +131,7 @@ def clusterDistance(G,type1,type2):
     dist = 0
     for e in commonEdges:
         if (nodeDict[e[0]]['c1']*nodeDict[e[1]]['c2']*e[2]):
-            dist+=(nodeDict[e[0]]['c1']*nodeDict[e[1]]['c2']*e[2])
+            dist+=(nodeDict[e[0]]['c1']*nodeDict[e[0]]['c2']*nodeDict[e[1]]['c2']*nodeDict[e[1]]['c1']*e[2])*N
     return dist
 
 def has_double_edge(edges):
@@ -160,6 +161,7 @@ def has_double_edge(edges):
     return False
 
 k = 0
+begin = time.time()
 for path in dataPaths:
     data = pd.DataFrame()
     graph = nx.read_gexf(path)
@@ -182,11 +184,14 @@ for path in dataPaths:
     for i in range(len(types)):
         for j in range(i+1,len(types)):
             dist = clusterDistance(graph,types[i],types[j])
-            print('type {} type {} : {}'.format(types[i],types[j],dist))
-            types1.append(types[i])
-            types2.append(types[j])
-            dists.append(dist)
-    data = pd.DataFrame({'type1':types1,'type2':types2,'value':dists})
-    data.to_csv(dataNames[k]+'.csv',index=False)
-    k+=1
+            #print('type {} type {} : {}'.format(types[i],types[j],dist))
+    #         types1.append(types[i])
+    #         types2.append(types[j])
+    #         dists.append(dist)
+    # data = pd.DataFrame({'type1':types1,'type2':types2,'value':dists})
+    # #data.to_csv(dataNames[k]+'.csv',index=False)
+    # k+=1
+    end = time.time()
+    print(len(types),len(nodes),len(graph.edges(data=True)))
+    print(end-begin)
 
