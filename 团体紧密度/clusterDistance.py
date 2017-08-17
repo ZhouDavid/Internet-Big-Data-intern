@@ -6,8 +6,8 @@ from collections import Counter
 import pandas as pd
 import time
 
-dataDirectory = os.path.join('..','..','..','data','cluster')
-dataNames = ['大数据.gexf']#,'大连税务.gexf','2016贵州招投标结果.gexf'
+dataDirectory = ''
+dataNames = ['大数据.gexf','大连税务.gexf','2016贵州招投标结果.gexf']
 dataPaths = [os.path.join(dataDirectory,name) for name in dataNames]
 N = 20#平衡系数
 
@@ -127,7 +127,7 @@ class SimpleGraph:
 
         dist = 0
         for e in commonEdges:
-            if (nodeDict[e[0]]['c1']*nodeDict[e[1]]['c2']*e[2]):
+            if (nodeDict[e[0]]['c1'] and nodeDict[e[0]]['c2'] and nodeDict[e[1]]['c2'] and nodeDict[e[1]]['c1'] and e[2]):
                 dist+=(nodeDict[e[0]]['c1']*nodeDict[e[0]]['c2']*nodeDict[e[1]]['c2']*nodeDict[e[1]]['c1']*e[2])*N
         return dist
 
@@ -151,7 +151,7 @@ for path in dataPaths:
             types2.append(graph.types[j])
             dists.append(dist)
     data = pd.DataFrame({'type1':types1,'type2':types2,'value':dists})
-    data.to_csv(dataNames[k]+'.csv',index=False)
+    data.to_csv(dataNames[k][:-5]+'.csv',index=False)
     k+=1
     end = time.time()
     print('running time:{}'.format(end-begin))
