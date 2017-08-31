@@ -1,0 +1,54 @@
+package com.example.zhoujianyu.helloworld;
+
+
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.util.Log;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.Process;
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity {
+
+    public int capacityMat[][] = new int[16][28];
+    ArrayList<String> rawData = new ArrayList<>();
+    public void getRawCapacityData(){
+        try {
+            rawData.clear();
+            Process process = new ProcessBuilder(new String[] {"aptouch_daemon_debug", "diffdata"}).start();
+            InputStream procInputStream = process.getInputStream();
+            InputStreamReader reader = new InputStreamReader(procInputStream);
+            BufferedReader bufferedreader = new BufferedReader(reader);
+            String line = "";
+            while ((line = bufferedreader.readLine()) != null) {
+                rawData.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void refresh(){
+        getRawCapacityData();
+        for(int i = 0;i<rawData.size();i++){
+            String [] arr = rawData.get(i).split("\t");
+            for(int j = 0;j<arr.length;j++){
+                capacityMat[i][j] = Integer.parseInt(arr[j]);
+            }
+        }
+    }
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.e("Jianyu;Zhou:","here");
+       // refresh();
+        setContentView(R.layout.activity_main);
+
+
+    }
+}
