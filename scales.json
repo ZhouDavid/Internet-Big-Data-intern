@@ -1,0 +1,4 @@
+[{"name":"gender","left":"Masculine","right":"Feminine"},
+ {"name":"intelligence","left":"Dumb","right":"Intelligent"},
+ {"name":"friendliness","left":"Unfriendly","right":"Friendly"},
+ {"name":"age","left":"Childlike","right":"Mature"}]
